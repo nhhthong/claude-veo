@@ -1,0 +1,60 @@
+<!doctype html>
+<!--
+  claude-veo · explainer template (15 s, 1920x1080, dark theme).
+  For "what is X?" videos: a title, one diagram that builds in three beats with a caption per beat, an end line.
+  Copy this file and the kit/ folder side by side. Example topic: Git. Replace the diagram and the captions.
+-->
+<html lang="en"><head><meta charset="utf-8"><title>Explainer</title>
+<link rel="stylesheet" href="kit/veo.css"></head>
+<body class="dark"><div id="stage"></div>
+<script src="kit/veo.js"></script>
+<script>
+const { el, fx, seg, ease, eo, win, layer, arrow, svg } = Veo;
+window.DURATION = 15;
+const ORANGE = "#ff8a4d", BLUE = "#4da3ff", GREEN = "#5fd29a";
+
+const drift = Veo.blobs();
+const title = el("a", "What is Git?", "left:108px;top:66px;font-size:72px;font-weight:800;letter-spacing:-.02em");
+const sub = el("a", "Version control: a history of every change", "left:110px;top:160px;font-size:34px;color:var(--muted)");
+
+// Diagram: commits on main, a branch, a merge. Coordinates are in the 1920x1080 design space.
+const X = [360, 660, 960, 1260, 1560], Y = 540, YB = 750;
+const g = layer();
+const mainLine = arrow(g, `M ${X[0]} ${Y} L ${X[4]} ${Y}`, "#98a0c0", { width: 6, dash: "1 0", head: false });
+const branch = arrow(g, `M ${X[2]} ${Y} C ${X[2] + 90} ${Y} ${X[2] + 60} ${YB} ${X[3] - 120} ${YB} L ${X[3] + 150} ${YB}`, BLUE, { width: 6, dash: "1 0", head: false });
+const merge = arrow(g, `M ${X[3] + 150} ${YB} C ${X[3] + 240} ${YB} ${X[4] - 90} ${Y} ${X[4]} ${Y}`, GREEN, { width: 6, dash: "14 10" });
+const dot = (x, y, c) => el("a", "", `left:${x - 24}px;top:${y - 24}px;width:48px;height:48px;border-radius:50%;background:${c};border:6px solid var(--bg);box-shadow:0 0 0 3px ${c}`);
+const label = (s, x, y, c) => el("a", s, `left:${x - 120}px;top:${y}px;width:240px;text-align:center;font-family:var(--mono);font-size:28px;font-weight:700;color:${c}`);
+const mains = [0, 1, 2, 4].map((i) => dot(X[i], Y, ORANGE));
+const mainLabels = [["init", 0], ["add login", 1], ["fix bug", 2], ["release", 4]].map(([s, i]) => label(s, X[i], Y - 84, "var(--muted)"));
+const bdots = [dot(X[3] - 120, YB, BLUE), dot(X[3] + 150, YB, BLUE)];
+const blabel = label("feature branch", X[3] + 15, YB + 40, BLUE);
+const mlabel = label("merge", X[4] + 90, Y + 40, GREEN);
+
+// One caption per beat: [html, start, end, color]
+const CAPS = [
+  ["<b>Commit</b>: every save is a point in history", 1.8, 5.8, ORANGE],
+  ["<b>Branch</b>: try a feature without touching main", 5.8, 9.6, BLUE],
+  ["<b>Merge</b>: bring it back. Made a mistake? Go back to any point", 9.6, 13.2, GREEN],
+].map(([h, a, b, c]) => ({ e: el("caption", `<span><i style="display:inline-block;width:16px;height:16px;border-radius:50%;background:${c};margin-right:14px"></i>${h}</span>`), a, b }));
+
+const end = el("a", `Save history · <span style="color:${ORANGE}">work together</span>`, "left:0;right:0;top:470px;text-align:center;font-size:92px;font-weight:800;letter-spacing:-.02em");
+const bar = el("a", "", `left:0;bottom:0;height:8px;background:${ORANGE}`);
+
+window.setT = (t) => {
+  drift(t);
+  const g0 = 1 - seg(t, 13, 13.4);
+  fx(title, eo(seg(t, 0, 0.6)) * g0); fx(sub, eo(seg(t, 0.3, 0.9)) * g0);
+  mainLine(ease(seg(t, 0.8, 3.6)), g0);
+  [1.0, 1.8, 2.8, 4.9].forEach((a, k) => { fx(mains[k], seg(t, a, a + 0.3) * g0, 0, 0, 0.3); fx(mainLabels[k], seg(t, a + 0.1, a + 0.5) * g0, 0, 8); });
+  branch(ease(seg(t, 5.9, 7.6)), g0);
+  fx(bdots[0], seg(t, 6.6, 6.9) * g0, 0, 0, 0.3); fx(bdots[1], seg(t, 7.5, 7.8) * g0, 0, 0, 0.3); fx(blabel, seg(t, 7.2, 7.7) * g0, 0, 8);
+  merge(ease(seg(t, 9.7, 10.7)), g0);
+  fx(mlabel, seg(t, 10.8, 11.3) * g0, 0, 8);
+  mains[3].style.boxShadow = `0 0 0 3px ${t > 10.6 ? GREEN : ORANGE}`;
+  CAPS.forEach(({ e, a, b }) => fx(e, win(t, a, b, 0.5), 0, 12));
+  fx(end, eo(seg(t, 13.4, 14.1)), 0, 20);
+  bar.style.width = (t / 15) * 1920 + "px";
+};
+setT(0);
+</script></body></html>

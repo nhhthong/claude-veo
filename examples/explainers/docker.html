@@ -1,0 +1,59 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>Docker là gì?</title>
+<link rel="stylesheet" href="_kit.css"></head><body><div id="stage"></div>
+<script src="_kit.js"></script>
+<script>
+window.DURATION = 15;
+const BLUE = "#4da3ff", ORG = "#ffb45a";
+const title = box("title", "Docker là gì?", 72, 44);
+const sub = box("sub", "Đóng gói ứng dụng cùng môi trường chạy của nó", 74, 106);
+
+// Scene 1: "works on my machine"
+const lap = box("card", `<div style="padding:18px 22px"><b style="font-size:24px">Laptop của bạn</b><div class="mono" style="color:var(--muted);margin-top:10px;font-size:20px">Node 20 · lib v2</div></div>`, 120, 230, 400, 150);
+const srv = box("card", `<div style="padding:18px 22px"><b style="font-size:24px">Máy chủ</b><div class="mono" style="color:var(--muted);margin-top:10px;font-size:20px">Node 14 · lib v1</div></div>`, 760, 230, 400, 150);
+const ok = box("", "✓", 440, 250, 60, 60, `font-size:48px;color:var(--ok);font-weight:800`);
+const bad = box("", "✗", 1080, 250, 60, 60, `font-size:48px;color:var(--bad);font-weight:800`);
+const arr1 = line(525, 305, 755, 305, "#98a0c0", 3, true);
+const quote = box("", "“Máy tôi chạy được mà!”", 0, 440, 1280, 60, `text-align:center;font-size:38px;font-weight:700`);
+const cap1 = caption("Vấn đề: mỗi máy một môi trường", 2.4, 6, ORG);
+
+// Scene 2: container
+const cont = box("card", "", 380, 190, 520, 330, `border:2px solid ${BLUE};box-shadow:0 0 40px #4da3ff33`);
+const clabel = box("", "Container", 380, 150, 520, 36, `text-align:center;font-size:26px;font-weight:800;color:${BLUE}`);
+const items = ["Ứng dụng", "Node 20", "Thư viện v2"].map((s, i) => box("chip mono", s, 450, 230 + i * 90, 380, null, "text-align:center"));
+const cap2 = caption("Container: app + môi trường trong một hộp", 6, 10, BLUE);
+
+// Scene 3: ship anywhere
+const hosts = ["Laptop", "Máy chủ", "Cloud"].map((s, i) => box("card", `<div style="padding:14px 20px;text-align:center;font-size:22px;font-weight:600">${s} <span style="color:var(--ok);font-size:26px">✓</span></div>`, 940, 150 + i * 150, 250, 80));
+const paths = [0, 1, 2].map(i => curve(`M 900 355 C 920 355 920 ${190 + i * 150} 935 ${190 + i * 150}`, BLUE, 3));
+const cap3 = caption("Chạy giống hệt nhau ở mọi nơi", 10, 13.2, "#5fd29a");
+
+// End
+const end = box("end", `Build once, <span style="color:${BLUE}">run anywhere</span>`);
+const bar = box("bar", "", 0, null, 0, null, `background:${BLUE}`);
+
+window.setT = (t) => {
+  show(title, ease(seg(t, 0, 0.6))); show(sub, ease(seg(t, 0.3, 0.9)));
+  const s1 = window01(t, 0.8, 6.0, 0.5), s2 = window01(t, 6, 13.2, 0.5);
+  show(lap, ease(seg(t, 0.9, 1.5)) * (1 - seg(t, 5.5, 6)), 14, -30);
+  show(srv, ease(seg(t, 1.3, 1.9)) * (1 - seg(t, 5.5, 6)), 14, 30);
+  draw(arr1, ease(seg(t, 1.8, 2.8)) * (1 - seg(t, 5.5, 6)));
+  show(ok, seg(t, 2.6, 3.0) * (1 - seg(t, 5.5, 6)), 0, 0, 0.5);
+  show(bad, seg(t, 3.4, 3.8) * (1 - seg(t, 5.5, 6)), 0, 0, 0.5);
+  show(quote, seg(t, 4, 4.6) * (1 - seg(t, 5.5, 6)));
+  cap1(t);
+  const cp = ease(seg(t, 6.2, 7)), cm = 1 - seg(t, 12.6, 13.2);
+  show(cont, cp * cm, 0, 0, 0.9); show(clabel, cp * cm);
+  items.forEach((e, i) => show(e, ease(seg(t, 6.8 + i * 0.5, 7.4 + i * 0.5)) * cm, 12));
+  // container slides left in scene 3
+  const shift = -ease(seg(t, 10, 10.8)) * 330;
+  [cont, clabel, ...items].forEach(e => e.style.marginLeft = shift + "px");
+  hosts.forEach((e, i) => show(e, ease(seg(t, 10.6 + i * 0.4, 11.2 + i * 0.4)) * cm, 0, 30));
+  paths.forEach((p, i) => draw(p, ease(seg(t, 10.8 + i * 0.4, 11.6 + i * 0.4)) * cm));
+  cap2(t); cap3(t);
+  const e = ease(seg(t, 13.4, 14.1));
+  title.style.opacity = Math.min(title.style.opacity, 1 - seg(t, 13, 13.4)); sub.style.opacity = Math.min(sub.style.opacity, 1 - seg(t, 13, 13.4));
+  show(end, e, 16);
+  bar.style.width = (t / 15 * 1280) + "px";
+};
+setT(0);
+</script></body></html>

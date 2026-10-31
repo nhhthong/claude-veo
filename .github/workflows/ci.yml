@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Manifests are valid JSON
+        run: |
+          for f in .claude-plugin/*.json; do node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))" && echo "ok $f"; done
+      - name: Skills have a name and a description
+        run: |
+          for f in skills/*/SKILL.md; do
+            head -5 "$f" | grep -q '^name: ' && head -5 "$f" | grep -q '^description: ' || { echo "missing frontmatter in $f"; exit 1; }
+            echo "ok $f"
+          done
+      - name: Scripts parse
+        run: for f in skills/video-engine/scripts/*.mjs skills/video-engine/kit/veo.js; do node --check "$f" && echo "ok $f"; done
+      - name: Install Playwright and ffmpeg
+        run: |
+          npm i --no-save playwright
+          npx playwright install --with-deps chromium
+          sudo apt-get install -y ffmpeg
+      - name: Render smoke test
+        run: |
+          mkdir -p out && cp -r skills/video-engine/kit out/ && cp skills/video-engine/templates/*.html out/
+          node skills/video-engine/scripts/shots.mjs out/product-demo.html out/sheet.jpg 2 7 13.5 20.5 26 32
+          node skills/video-engine/scripts/render.mjs --html out/product-demo.html --out out/demo.mp4 --from 10 --to 13 --workers 2
+          node skills/video-engine/scripts/render.mjs --html out/explainer.html --out out/explainer.mp4 --from 0 --to 2
+          ffmpeg -v error -f lavfi -i "sine=f=220:d=10" -ac 2 out/music.mp3
+          ffmpeg -v error -f lavfi -i "sine=f=880:d=1" out/voice.mp3
+          node skills/video-engine/scripts/mix.mjs --video out/demo.mp4 --out out/mixed.mp4 --music out/music.mp3 --voice 0.5:out/voice.mp3
+          ffprobe -v error -show_entries stream=codec_type,width,height,duration -of compact out/mixed.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: smoke-render
+          path: out/*.jpg
