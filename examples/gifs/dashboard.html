@@ -1,0 +1,58 @@
+<!doctype html>
+<!-- claude-veo example · "Pulse" analytics dashboard (made-up product), 8 s loop, light theme. -->
+<html lang="en"><head><meta charset="utf-8"><title>Pulse dashboard</title>
+<link rel="stylesheet" href="../../skills/video-engine/kit/veo.css"></head>
+<body><div id="stage"></div>
+<script src="../../skills/video-engine/kit/veo.js"></script>
+<script>
+const { el, fx, seg, ease, eo, win, count, svg, arrow, windowMock, blobs } = Veo;
+window.DURATION = 8;
+const drift = blobs();
+const all = (t) => win(t, 0, 8, 0.5); // whole-loop fade so the GIF loops cleanly
+
+const w = windowMock("Pulse · October overview", { x: 210, y: 90, w: 1500, h: 820 });
+const KPI = [["Revenue", 48920, (n) => "$" + Math.round(n).toLocaleString("en-US"), "+12.4%"],
+             ["Active users", 12480, (n) => Math.round(n).toLocaleString("en-US"), "+8.1%"],
+             ["Conversion", 3.8, (n) => n.toFixed(1) + "%", "+0.6 pt"]];
+const cards = KPI.map(([k], i) => el("a", `<div style="font-size:24px;color:var(--muted);font-weight:600">${k}</div><div class="v" style="font-size:64px;font-weight:800;letter-spacing:-.02em;margin-top:8px">0</div><div class="d" style="display:inline-block;margin-top:10px;font-size:22px;font-weight:700;color:var(--ok);background:var(--ok-soft);border-radius:999px;padding:4px 14px">${KPI[i][3]}</div>`,
+  `left:${50 + i * 475}px;top:40px;width:445px;height:210px;padding:30px 34px;border-radius:18px;background:var(--bg);border:1px solid var(--line)`, w.body));
+
+// Line chart with a soft area under it
+const chart = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+chart.setAttribute("viewBox", "0 0 1400 470"); chart.style.cssText = "position:absolute;left:50px;top:290px;width:1400px;height:470px;overflow:visible";
+w.body.append(chart);
+const defs = svg(chart, "defs", {});
+const grad = svg(defs, "linearGradient", { id: "fillA", x1: 0, y1: 0, x2: 0, y2: 1 });
+svg(grad, "stop", { offset: "0", "stop-color": "#2563eb", "stop-opacity": ".28" }); svg(grad, "stop", { offset: "1", "stop-color": "#2563eb", "stop-opacity": "0" });
+for (let i = 0; i < 5; i++) svg(chart, "line", { x1: 0, x2: 1400, y1: 40 + i * 100, y2: 40 + i * 100, stroke: "var(--line)", "stroke-width": 2 });
+const P = [380, 350, 362, 300, 318, 260, 270, 205, 222, 160, 140, 92];
+const pts = P.map((y, i) => [i * (1400 / 11), y]);
+const d = pts.map(([x, y], i) => (i ? "L" : "M") + x + " " + y).join(" ");
+const area = svg(chart, "path", { d: d + " L 1400 440 L 0 440 Z", fill: "url(#fillA)" });
+const line = arrow(chart, d, "#2563eb", { width: 6, dash: "1 0", head: false });
+const dot = svg(chart, "circle", { r: 12, fill: "#2563eb", stroke: "#fff", "stroke-width": 5 });
+const tip = el("a", "", "left:0;top:0;font-size:22px;font-weight:700;color:#fff;background:var(--ink);border-radius:10px;padding:6px 12px;white-space:nowrap", w.body);
+
+const toast = el("a", `<span style="font-size:30px">🎯</span><div><div style="font-weight:800">Monthly goal reached</div><div style="color:var(--muted);font-size:22px">Revenue passed $45,000</div></div>`,
+  "left:1250px;top:900px;display:flex;gap:16px;align-items:center;font-size:26px;background:var(--paper);border-radius:16px;padding:18px 26px;box-shadow:var(--shadow);border:1px solid var(--line)");
+
+window.setT = (t) => {
+  drift(t);
+  const A = all(t);
+  fx(w.win, ease(seg(t, 0, 0.7)) * A, 0, 40, 0.97);
+  cards.forEach((c, i) => {
+    fx(c, eo(seg(t, 0.5 + i * 0.15, 1.1 + i * 0.15)) * A, 0, 20);
+    count(c.querySelector(".v"), 0, KPI[i][1], ease(seg(t, 0.8 + i * 0.15, 2.8 + i * 0.15)), KPI[i][2]);
+  });
+  const p = ease(seg(t, 1.6, 4.6));
+  line(p, A);
+  area.style.opacity = ease(seg(t, 3.2, 4.8)) * A;
+  const L = 1400 * p, k = Math.min(10.999, p * 11), i0 = Math.floor(k), f = k - i0;
+  const x = L, y = P[i0] + (P[Math.min(11, i0 + 1)] - P[i0]) * f;
+  dot.setAttribute("cx", x); dot.setAttribute("cy", y); dot.style.opacity = p > 0 ? A : 0;
+  tip.textContent = "$" + Math.round(18000 + 30920 * p).toLocaleString("en-US");
+  tip.style.transform = `translate(${50 + x - (p > 0.85 ? 150 : 50)}px,${290 + y - 64}px)`; tip.style.opacity = p > 0 ? A : 0;
+  fx(toast, eo(seg(t, 4.9, 5.5)) * (1 - seg(t, 7.0, 7.4)), 80, 0);
+};
+setT(0);
+</script></body></html>

@@ -42,6 +42,7 @@ jobs:
           ffmpeg -v error -f lavfi -i "sine=f=880:d=1" out/voice.mp3
           node skills/video-engine/scripts/mix.mjs --video out/demo.mp4 --out out/mixed.mp4 --music out/music.mp3 --voice 0.5:out/voice.mp3
           ffprobe -v error -show_entries stream=codec_type,width,height,duration -of compact out/mixed.mp4
+          node skills/video-engine/scripts/gif.mjs --in out/explainer.html --out out/loop.gif --from 0 --to 1.5 --width 480 --fps 12
       - uses: actions/upload-artifact@v4
         with:
           name: smoke-render

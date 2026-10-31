@@ -19,6 +19,7 @@ A video is one HTML page that draws any moment exactly: the page sets `window.DU
 | `scripts/shots.mjs` | Contact sheet of chosen times, without rendering: the fast feedback loop |
 | `scripts/render.mjs` | Page to MP4 (`--workers`, `--poster`, `--from/--to`) |
 | `scripts/mix.mjs` | Music (trim, fades, level) and voice clips at given times, music ducked under the voice |
+| `scripts/gif.mjs` | Page or MP4 to a looping GIF under a size budget (palette, fps/width step-down) |
 | `references/style.md` | The house style: layout, colours, motion recipes with timings, pace |
 | `references/workflow.md` | Step by step from storyboard to delivered MP4, with commands |
 | `references/voiceover.md` | How to write a timed voice-over script for ElevenLabs or another TTS |

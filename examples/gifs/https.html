@@ -1,0 +1,46 @@
+<!doctype html>
+<!-- claude-veo example · "How HTTPS works" explainer, 8 s loop, dark theme. Simplified TLS handshake. -->
+<html lang="en"><head><meta charset="utf-8"><title>HTTPS handshake</title>
+<link rel="stylesheet" href="../../skills/video-engine/kit/veo.css"></head>
+<body class="dark"><div id="stage"></div>
+<script src="../../skills/video-engine/kit/veo.js"></script>
+<script>
+const { el, fx, seg, ease, eo, win, layer, arrow, blobs, lerp } = Veo;
+window.DURATION = 8;
+const drift = blobs();
+const A = (t) => win(t, 0, 8, 0.5);
+
+const title = el("a", "How HTTPS works", "left:108px;top:66px;font-size:68px;font-weight:800;letter-spacing:-.02em");
+const node = (name, sub, x, icon) => el("a", `<div style="font-size:64px">${icon}</div><div style="font-size:34px;font-weight:800;margin-top:6px">${name}</div><div style="font-size:22px;color:var(--muted)">${sub}</div>`,
+  `left:${x}px;top:330px;width:330px;height:300px;border-radius:24px;background:var(--paper);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center`);
+const B = node("Browser", "you", 200, "🧑‍💻"), S = node("Server", "example.com", 1390, "🗄️");
+const g = layer();
+const MSG = [["1 · Hello", "→", 0.9, "#4da3ff", 400], ["2 · Certificate", "←", 2.0, "#ffb45a", 500], ["3 · Shared key", "→", 3.1, "#c084fc", 600]];
+const lanes = MSG.map(([, dir, , c, y]) => arrow(g, dir === "→" ? `M 560 ${y} L 1360 ${y}` : `M 1360 ${y} L 560 ${y}`, c));
+const pills = MSG.map(([s, , , c]) => el("a", s, `left:0;top:0;font-size:24px;font-weight:700;color:#0b0d18;background:${c};border-radius:999px;padding:8px 18px;white-space:nowrap`));
+const lock = el("a", "🔓", "left:910px;top:720px;font-size:84px;width:100px;text-align:center");
+const enc = el("a", "", "left:560px;top:850px;width:800px;text-align:center;font-family:var(--mono);font-size:30px;color:var(--ok);letter-spacing:.1em");
+const cap = el("caption", "<span>Encrypted: nobody in between can read it</span>", "top:960px");
+
+window.setT = (t) => {
+  drift(t);
+  const a = A(t);
+  fx(title, eo(seg(t, 0, 0.6)) * a, 0, 20);
+  fx(B, eo(seg(t, 0.1, 0.7)) * a, -60, 0); fx(S, eo(seg(t, 0.2, 0.8)) * a, 60, 0);
+  MSG.forEach(([, dir, s, , y], i) => {
+    const p = ease(seg(t, s, s + 0.9));
+    lanes[i](p, a * 0.9);
+    const x = dir === "→" ? lerp(560, 1180, p) : lerp(1180, 560, p);
+    pills[i].style.transform = `translate(${x}px,${y - 60}px)`; pills[i].style.opacity = seg(t, s, s + 0.2) * a;
+  });
+  const locked = seg(t, 4.2, 4.5);
+  lock.textContent = locked > 0.5 ? "🔒" : "🔓";
+  fx(lock, eo(seg(t, 3.9, 4.3)) * a, 0, 0, 0.5);
+  lock.style.transform += ` scale(${1 + 0.25 * Math.sin(locked * Math.PI)})`;
+  const chars = "a9f3 0c7e d21b 88aa 5e4f 19c0 7b2d e6a1";
+  enc.textContent = chars.slice(0, Math.round(chars.length * seg(t, 4.5, 6)));
+  enc.style.opacity = a;
+  fx(cap, win(t, 4.6, 7.6, 0.5), 0, 12);
+};
+setT(0);
+</script></body></html>
