@@ -1,0 +1,14 @@
+{
+  "name": "veo-studio",
+  "description": "Animated product demo and explainer videos, made by Claude Code.",
+  "owner": {
+    "name": "nhhthong"
+  },
+  "plugins": [
+    {
+      "name": "veo",
+      "source": "./",
+      "description": "Product demo and explainer videos from HTML, rendered to MP4."
+    }
+  ]
+}

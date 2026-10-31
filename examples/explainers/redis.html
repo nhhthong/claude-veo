@@ -1,0 +1,56 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>Redis là gì?</title>
+<link rel="stylesheet" href="_kit.css"></head><body><div id="stage"></div>
+<script src="_kit.js"></script>
+<script>
+window.DURATION = 15;
+const RED = "#ff5a5a", BLUE = "#4da3ff", GRN = "#5fd29a";
+const title = box("title", "Redis là gì?", 72, 44);
+const sub = box("sub", "Kho dữ liệu key–value chạy trong bộ nhớ RAM", 74, 106);
+
+// Scene 1: app -> slow DB
+const app = box("card", `<div style="padding:26px;text-align:center;font-size:26px;font-weight:700">Ứng dụng</div>`, 90, 280, 240, 90);
+const db = box("card", `<div style="padding:26px;text-align:center;font-size:26px;font-weight:700">Database<div style="font-size:18px;color:var(--muted);font-weight:500;margin-top:6px">đĩa · chậm</div></div>`, 940, 255, 250, 140);
+const p1 = line(335, 325, 935, 325, "#98a0c0", 3, true);
+const dot1 = box("", "", 0, 316, 18, 18, "border-radius:50%;background:" + ORG());
+function ORG() { return "#ffb45a"; }
+const slow = box("mono", "120 ms", 560, 270, 160, 40, "text-align:center;font-size:30px;color:#ffb45a;font-weight:700");
+const cap1 = caption("Mỗi lần đọc đĩa đều tốn thời gian", 2.2, 5.8, "#ffb45a");
+
+// Scene 2: Redis cache
+const redis = box("card", `<div style="padding:16px;text-align:center;font-size:26px;font-weight:800;color:${RED}">Redis<div style="font-size:18px;color:var(--muted);font-weight:500;margin-top:6px">RAM · nhanh</div></div>`, 520, 330, 240, 110, `border:2px solid ${RED};box-shadow:0 0 36px #ff5a5a33`);
+const p2 = curve("M 330 340 C 400 340 430 385 515 385", GRN, 4);
+const p3 = curve("M 765 385 C 840 385 880 360 935 345", "#98a0c0", 3);
+const fast = box("mono", "1 ms", 540, 460, 200, 40, `text-align:center;font-size:30px;color:${GRN};font-weight:700`);
+const cap2 = caption("Redis giữ bản sao trong RAM: trả lời gần như tức thì", 6, 9.8, RED);
+
+// Scene 3: key-value table
+const rows = [["user:1", "\"Lan\""], ["cart:7", "[3 món]"], ["views", "1042"]].map((r, i) =>
+  box("card mono", `<div style="display:flex;justify-content:space-between;padding:14px 24px;font-size:24px"><span style="color:${RED}">${r[0]}</span><span>${r[1]}</span></div>`, 340, 220 + i * 84, 600, 66));
+const hdr = box("", "key  →  value", 340, 172, 600, 36, "text-align:center;color:var(--muted);font-size:20px;letter-spacing:.08em");
+const cap3 = caption("Dữ liệu là cặp key → value: dùng cho cache, phiên, hàng đợi", 10, 13.2, BLUE);
+
+const end = box("end", `Nhanh vì ở trong <span style="color:${RED}">RAM</span>`);
+const bar = box("bar", "", 0, null, 0, null, `background:${RED}`);
+
+window.setT = (t) => {
+  show(title, ease(seg(t, 0, 0.6)) * (1 - seg(t, 13, 13.4))); show(sub, ease(seg(t, 0.3, 0.9)) * (1 - seg(t, 13, 13.4)));
+  const f1 = 1 - seg(t, 5.6, 6.1);
+  show(app, ease(seg(t, 0.8, 1.4)) * (t < 9.8 ? 1 : 1 - seg(t, 9.8, 10.2)), 14, -30);
+  show(db, ease(seg(t, 1.2, 1.8)) * (t < 9.8 ? 1 : 1 - seg(t, 9.8, 10.2)), 14, 30);
+  draw(p1, ease(seg(t, 1.6, 2.4)) * f1);
+  const dp = (t < 6 ? seg(t, 2.4, 4.4) : 0); dot1.style.left = (335 + 590 * ease(dp) - 9) + "px"; dot1.style.opacity = (dp > 0 && dp < 1 ? 1 : 0);
+  show(slow, seg(t, 4.3, 4.8) * f1, 6);
+  cap1(t);
+  const m = 1 - seg(t, 9.6, 10.2);
+  show(redis, ease(seg(t, 6.2, 6.9)) * m, 0, 0, 0.8);
+  draw(p2, ease(seg(t, 6.8, 7.6)) * m); draw(p3, ease(seg(t, 7.6, 8.4)) * m * 0.5);
+  show(fast, seg(t, 8.4, 8.9) * m, 6);
+  cap2(t);
+  hdr.style.opacity = window01(t, 10.2, 13.2, 0.4);
+  rows.forEach((r, i) => show(r, ease(seg(t, 10.4 + i * 0.5, 11 + i * 0.5)) * (1 - seg(t, 12.8, 13.2)), 0, 40));
+  cap3(t);
+  show(end, ease(seg(t, 13.4, 14.1)), 16);
+  bar.style.width = (t / 15 * 1280) + "px";
+};
+setT(0);
+</script></body></html>

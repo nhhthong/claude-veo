@@ -1,0 +1,129 @@
+<!doctype html>
+<!--
+  claude-veo · product demo template (34 s, 1920x1080).
+  Copy this file and the kit/ folder side by side, then edit the SCENES and the content.
+  Layout: visual on the left (x 70–1150), explanation panel on the right (x 1200–1820), tracker at the bottom.
+  Example product: "Ledgerly", a made-up expense tool. Replace every name, row and number with the real product's.
+-->
+<html lang="en"><head><meta charset="utf-8"><title>Product demo</title>
+<link rel="stylesheet" href="kit/veo.css"></head>
+<body><div id="stage"></div>
+<script src="kit/veo.js"></script>
+<script>
+const { el, fx, seg, ease, eo, lerp, win, layer, arrow, curve, count, type, panel, windowMock, tracker, blobs, brand } = Veo;
+window.DURATION = 34;
+
+// ---- timing: [start, end] of each step scene (seconds). Scenes overlap by ~0.2 s for cross-fades.
+const S = { intro: [0, 3.4], s1: [3.2, 10.2], s2: [10, 17.2], s3: [17, 24.2], s4: [24, 30.4], outro: [30.2, 34] };
+
+// ---- data (made up; use the user's real sample data or clearly fictional data)
+const ROWS = [
+  ["Oct 02", "Blue Bottle Coffee", "$4.50"], ["Oct 03", "Delta Air Lines", "$412.00"], ["Oct 03", "Marriott Downtown", "$289.40"],
+  ["Oct 05", "Uber", "$23.10"], ["Oct 07", "Figma", "$15.00"], ["Oct 08", "Staples", "$64.25"],
+];
+const CATS = [["Meals", "#f59e0b"], ["Travel", "#2563eb"], ["Lodging", "#7c3aed"], ["Transport", "#0891b2"], ["Software", "#16a34a"], ["Office", "#db2777"]];
+
+const drift = blobs();
+const logo = `<span class="logo" style="background:var(--accent);display:grid;place-items:center;color:#fff;font-size:24px">L</span>`;
+const mark = brand("Ledgerly", logo);
+
+// ---- intro
+const i0 = el("a", `<span class="logo" style="width:150px;height:150px;border-radius:36px;background:var(--accent);display:grid;place-items:center;color:#fff;font-size:84px;font-weight:800">L</span>`, "left:885px;top:290px");
+const i1 = el("hero-title", "Ledgerly", "top:470px");
+const i2 = el("hero-sub", "From a bank export to an <em>expense report</em> in a minute", "top:600px");
+
+// ---- step 1: import a file (table rows appear)
+const w1 = windowMock("transactions.csv", { x: 140, y: 340, w: 960, icon: { letter: "X", color: "#1d6f42" } });
+w1.body.style.padding = "24px";
+w1.body.innerHTML = `<table class="sheet" style="width:100%"><tr><th class="n"></th><th>Date</th><th>Merchant</th><th>Amount</th></tr>${ROWS.map((r, i) => `<tr class="r"><td class="n">${i + 2}</td>${r.map((v) => `<td>${v}</td>`).join("")}</tr>`).join("")}</table>`;
+const rows1 = [...w1.body.querySelectorAll("tr.r")];
+const p1 = panel("Step 1 · Import", "Drop in your bank export", "Ledgerly reads <b>CSV</b> and <b>Excel</b> files.<br>Nothing to retype.");
+
+// ---- step 2: auto-categorize (chips + dashed arrows)
+const g2 = layer();
+const L2 = [], R2 = [], A2 = [], K2 = [];
+ROWS.forEach((r, i) => {
+  const y = 190 + i * 110;
+  L2.push(el("chip", `${r[1]}`, `left:150px;top:${y}px`));
+  R2.push(el("chip", `<span class="ic" style="background:${CATS[i][1]}">${CATS[i][0][0]}</span>${CATS[i][0]}`, `left:760px;top:${y}px`));
+  A2.push(arrow(g2, curve(470, y + 31, 745, y + 31)));
+  K2.push(el("ok", "✓", `left:1080px;top:${y + 14}px`));
+});
+const c2 = el("a", "", "left:150px;top:880px;font-size:26px;font-weight:700;color:var(--ok)");
+const p2 = panel("Step 2 · Sort", "Every line finds its category", "Known merchants are matched for you.<br>Fix one, and Ledgerly remembers.");
+
+// ---- step 3: report (bars grow, total counts up)
+const w3 = windowMock("October report", { x: 140, y: 200, w: 960, h: 700 });
+const BAR = [4.5, 412, 289.4, 23.1, 15, 64.25];
+const bars = BAR.map((v, i) => el("a", `<div style="font-size:20px;color:var(--muted);margin-bottom:8px">${CATS[i][0]}</div><div class="bar" style="height:30px;border-radius:8px;background:${CATS[i][1]};width:0"></div>`, `left:60px;top:${150 + i * 72}px;width:820px`, w3.body));
+const total = el("a", "", "left:60px;top:40px;font-size:56px;font-weight:800;letter-spacing:-.02em", w3.body);
+const p3 = panel("Step 3 · Review", "See where the money went", "Totals by category, ready to check<br>before you send them.");
+
+// ---- step 4: export (thumbnails fly into a file)
+const thumbs = [0, 1, 2].map((i) => el("thumb", `<div class="t">Expense report</div><div class="gl" style="width:90%"></div><div class="gl" style="width:60%"></div><div>Total: <span class="fill">$808.25</span></div><div class="gl" style="width:80%"></div><div class="gl" style="width:70%"></div><div class="gl" style="width:85%"></div>`, "left:0;top:0"));
+const file = el("file", "PDF", "left:545px;top:720px");
+const fname = el("fname", "ledgerly_october_2026.pdf", "left:420px;top:920px");
+const p4 = panel("Step 4 · Export", "One click to a clean PDF", "Send it to finance as <b>PDF</b> or <b>Excel</b>.");
+
+// ---- outro
+const o0 = el("a", `<span class="logo" style="width:120px;height:120px;border-radius:30px;background:var(--accent);display:grid;place-items:center;color:#fff;font-size:68px;font-weight:800">L</span>`, "left:900px;top:240px");
+const o1 = el("hero-title", "Ledgerly", "top:390px;font-size:84px");
+const o2 = el("a", ["⚡ Import in seconds", "🗂️ Auto-sorted", "📄 Report-ready"].map((s) => `<span class="pill">${s}</span>`).join(""), "left:0;right:0;top:520px;display:flex;justify-content:center;gap:22px");
+const o3 = el("a", "ledgerly.example.com", "left:0;right:0;top:660px;text-align:center;font-size:32px;font-weight:700;color:var(--accent)");
+
+const track = tracker([S.s1, S.s2, S.s3, S.s4]);
+
+window.setT = (t) => {
+  drift(t);
+  fx(mark, win(t, S.s1[0], S.s4[1]), 0, -10);
+
+  // intro
+  const io = 1 - seg(t, S.intro[1] - 0.6, S.intro[1]);
+  fx(i0, eo(seg(t, 0.2, 1.0)) * io, 0, 0, 0.6);
+  fx(i1, eo(seg(t, 0.6, 1.3)) * io, 0, 30);
+  fx(i2, eo(seg(t, 1.1, 1.8)) * io, 0, 30);
+
+  // step 1
+  fx(w1.win, ease(win(t, ...S.s1, 0.7)), -60, 0, 0.97);
+  fx(p1, ease(win(t, S.s1[0] + 0.5, S.s1[1] - 0.2, 0.7)), 60, 0);
+  rows1.forEach((r, i) => { const p = eo(seg(t, 4.2 + i * 0.35, 4.7 + i * 0.35)); r.style.opacity = p; r.style.transform = `translateX(${(1 - p) * -30}px)`; });
+
+  // step 2
+  const out2 = 1 - seg(t, S.s2[1] - 0.6, S.s2[1]);
+  L2.forEach((e, i) => fx(e, eo(seg(t, 10.1 + i * 0.12, 10.7 + i * 0.12)) * out2, -40, 0));
+  R2.forEach((e, i) => fx(e, eo(seg(t, 10.3 + i * 0.12, 10.9 + i * 0.12)) * out2, 40, 0));
+  let done = 0;
+  A2.forEach((draw, i) => { const a = 11.4 + i * 0.6; draw(ease(seg(t, a, a + 0.6)), out2); fx(K2[i], eo(seg(t, a + 0.55, a + 0.85)) * out2, 0, 0, 0.3); if (t >= a + 0.6) done++; });
+  c2.textContent = `✓ ${done}/${ROWS.length} sorted`; fx(c2, seg(t, 11.4, 11.8) * out2, 0, 10);
+  fx(p2, ease(win(t, S.s2[0] + 0.4, S.s2[1] - 0.2, 0.7)), 60, 0);
+
+  // step 3
+  fx(w3.win, ease(win(t, ...S.s3, 0.7)), -60, 0, 0.97);
+  bars.forEach((b, i) => { b.lastChild.style.width = (ease(seg(t, 18 + i * 0.25, 19.2 + i * 0.25)) * BAR[i] / 412 * 760 + 4) + "px"; });
+  count(total, 0, 808.25, ease(seg(t, 18, 20.4)), (n) => "$" + n.toFixed(2));
+  fx(p3, ease(win(t, S.s3[0] + 0.4, S.s3[1] - 0.2, 0.7)), 60, 0);
+
+  // step 4
+  const out4 = 1 - seg(t, S.s4[1] - 0.6, S.s4[1]);
+  const fan = ease(seg(t, 24.4, 25.6)), into = ease(seg(t, 26.6, 27.6));
+  thumbs.forEach((e, i) => {
+    const c = i - 1, x = lerp(lerp(470, 470 + c * 230, fan), 470, into), y = lerp(lerp(260, 260 + Math.abs(c) * 26, fan), 600, into);
+    e.style.transform = `translate(${x}px,${y}px) rotate(${c * 7 * fan * (1 - into)}deg) scale(${lerp(1, 0.25, into)})`;
+    const op = seg(t, 24.0 + i * 0.1, 24.4 + i * 0.1) * (1 - seg(t, 27.2, 27.6)) * out4;
+    e.style.opacity = op; e.style.visibility = op > 0 ? "visible" : "hidden"; e.style.zIndex = 5 - Math.abs(c);
+  });
+  fx(file, eo(seg(t, 26.4, 27.0)) * out4, 0, 20, 0.6);
+  file.style.transform += ` scale(${1 + 0.08 * Math.sin(seg(t, 27.4, 28) * Math.PI)})`;
+  fx(fname, eo(seg(t, 27.7, 28.2)) * out4, 0, 16);
+  fx(p4, ease(win(t, S.s4[0] + 0.4, S.s4[1] - 0.2, 0.7)), 60, 0);
+
+  // outro
+  fx(o0, eo(seg(t, 30.3, 31.0)), 0, 0, 0.6);
+  fx(o1, eo(seg(t, 30.5, 31.2)), 0, 26);
+  fx(o2, eo(seg(t, 31.0, 31.7)), 0, 26);
+  fx(o3, eo(seg(t, 31.5, 32.2)), 0, 20);
+
+  track(t);
+};
+setT(0);
+</script></body></html>
