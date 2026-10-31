@@ -1,0 +1,40 @@
+<!doctype html>
+<!-- claude-veo example · launch announcement for a made-up app "Nimbus 2.0", 8 s loop, light theme, kinetic type. -->
+<html lang="en"><head><meta charset="utf-8"><title>Launch announcement</title>
+<link rel="stylesheet" href="../../skills/video-engine/kit/veo.css">
+<style>:root { --blob-a: #c7d2fe; --blob-b: #fbcfe8; }</style></head>
+<body><div id="stage"></div>
+<script src="../../skills/video-engine/kit/veo.js"></script>
+<script>
+const { el, fx, seg, ease, eo, win, blobs, pulse } = Veo;
+window.DURATION = 8;
+const drift = blobs();
+const A = (t) => win(t, 0, 8, 0.5);
+
+const intro = el("a", "Introducing", "left:0;right:0;top:200px;text-align:center;font-size:40px;font-weight:600;color:var(--muted);letter-spacing:.3em;text-transform:uppercase");
+const word = "Nimbus 2.0";
+// One colour per letter along a blue -> violet -> pink ramp (background-clip text breaks with per-letter transforms).
+const ramp = (k) => { const c = [[37, 99, 235], [124, 58, 237], [219, 39, 119]], x = k * 2, i = Math.min(1, Math.floor(x)), f = x - i; return `rgb(${c[i].map((v, j) => Math.round(v + (c[i + 1][j] - v) * f)).join(",")})`; };
+const letters = [...word].map((ch, i) => `<span style="display:inline-block;color:${ramp(i / (word.length - 1))}">${ch === " " ? "&nbsp;" : ch}</span>`).join("");
+const big = el("a", letters, "left:0;right:0;top:270px;text-align:center;font-size:180px;font-weight:800;letter-spacing:-.04em");
+const spans = [...big.querySelectorAll("span")];
+const FEAT = [["⚡", "2× faster sync"], ["✈️", "Works offline"], ["🌙", "Dark mode"]];
+const cards = FEAT.map(([ic, s], i) => el("a", `<div style="font-size:54px">${ic}</div><div style="font-size:32px;font-weight:700;margin-top:10px">${s}</div>`,
+  `left:${330 + i * 440}px;top:560px;width:380px;height:200px;border-radius:24px;background:var(--paper);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;transform-origin:50% 100%`));
+const cta = el("button", "Update now →", "left:820px;top:830px");
+
+window.setT = (t) => {
+  drift(t);
+  const a = A(t);
+  fx(intro, eo(seg(t, 0.2, 0.8)) * a, 0, 20);
+  spans.forEach((s, i) => { const p = eo(seg(t, 0.6 + i * 0.07, 1.2 + i * 0.07)); s.style.opacity = p * a; s.style.transform = `translateY(${(1 - p) * 80}px) rotate(${(1 - p) * 8}deg)`; });
+  cards.forEach((c, i) => {
+    const p = eo(seg(t, 2.2 + i * 0.25, 3.0 + i * 0.25));
+    c.style.opacity = p * a; c.style.visibility = p * a > 0 ? "visible" : "hidden";
+    c.style.transform = `perspective(900px) rotateX(${(1 - p) * 70}deg) translateY(${(1 - p) * 40}px) translateY(${Math.sin(t * 2 + i) * 6 * p}px)`;
+  });
+  fx(cta, eo(seg(t, 3.9, 4.5)) * a, 0, 20, 0.8);
+  pulse(cta, seg(t, 4.8, 5.6), "#2563eb");
+};
+setT(0);
+</script></body></html>
